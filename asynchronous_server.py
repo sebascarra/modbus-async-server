@@ -25,19 +25,46 @@ from custom_message import CustomModbusRequest
 # --------------------------------------------------------------------------- # 
 # configure the service logging
 # --------------------------------------------------------------------------- # 
-import logging #https://stackoverflow.com/questions/15727420/using-python-logging-in-multiple-modules -> See answer by Vinay Sajip, also see this job of his: https://docs.python.org/2/howto/logging.html
+# import logging #https://stackoverflow.com/questions/15727420/using-python-logging-in-multiple-modules -> See answer by Vinay Sajip, also see this job of his: https://docs.python.org/2/howto/logging.html
+# FORMAT = ('%(asctime)-15s %(threadName)-15s'
+#           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+# for handler in logging.root.handlers[:]: #See here: https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm (Remove all handlers associated with the root logger object)
+#     logging.root.removeHandler(handler)
+# #This works because, as per the documentation https://docs.python.org/3/library/logging.html#logging.basicConfig, "This function does nothing if the root logger already has handlers configured for it." 
+# onscreen = True
+# if onscreen: 
+#     logging.basicConfig(format=FORMAT)
+# else:
+#     logging.basicConfig(format=FORMAT, filename="modbus-async-server.log")
+# log = logging.getLogger()
+# log.setLevel(logging.DEBUG)
+
+# From: https://tutorialedge.net/python/python-logging-best-practices/
+import logging
+import logging.handlers as handlers
+import time
+
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-for handler in logging.root.handlers[:]: #See here: https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm (Remove all handlers associated with the root logger object)
-    logging.root.removeHandler(handler)
-#This works because, as per the documentation https://docs.python.org/3/library/logging.html#logging.basicConfig, "This function does nothing if the root logger already has handlers configured for it." 
-onscreen = True
-if onscreen: 
-    logging.basicConfig(format=FORMAT)
-else:
-    logging.basicConfig(format=FORMAT, filename="modbus-async-server.log")
+formatter = logging.Formatter(FORMAT)
+
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
+
+import os
+#https://stackoverflow.com/questions/4934806/how-can-i-find-scripts-directory-with-python
+logpath = os.path.dirname(os.path.realpath(__file__)) + "\logs"
+
+#https://stackoverflow.com/questions/273192/how-can-i-safely-create-a-nested-directory
+if not os.path.exists(logpath):
+    os.makedirs(logpath)
+
+os.chdir(logpath)
+
+logHandler = handlers.RotatingFileHandler(filename='modbus-async-server.log', maxBytes=50e6, backupCount=20)
+logHandler.setLevel(logging.DEBUG)
+logHandler.setFormatter(formatter)
+log.addHandler(logHandler)
 
 
 def run_async_server():
