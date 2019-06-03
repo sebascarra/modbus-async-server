@@ -25,10 +25,17 @@ from custom_message import CustomModbusRequest
 # --------------------------------------------------------------------------- # 
 # configure the service logging
 # --------------------------------------------------------------------------- # 
-import logging
+import logging #https://stackoverflow.com/questions/15727420/using-python-logging-in-multiple-modules -> See answer by Vinay Sajip, also see this job of his: https://docs.python.org/2/howto/logging.html
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT)
+for handler in logging.root.handlers[:]: #See here: https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm (Remove all handlers associated with the root logger object)
+    logging.root.removeHandler(handler)
+#This works because, as per the documentation https://docs.python.org/3/library/logging.html#logging.basicConfig, "This function does nothing if the root logger already has handlers configured for it." 
+onscreen = True
+if onscreen: 
+    logging.basicConfig(format=FORMAT)
+else:
+    logging.basicConfig(format=FORMAT, filename="modbus-async-server.log")
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
